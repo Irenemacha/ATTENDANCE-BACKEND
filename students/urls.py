@@ -1,7 +1,6 @@
-
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    # empty for now OR safe test
+    path("test/", views.test),
 ]
