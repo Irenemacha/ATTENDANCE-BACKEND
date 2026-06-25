@@ -1,31 +1,42 @@
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
-from students.models import Student
-from courses.models import Subject
+class AttendanceSession(models.Model):
 
+    lecturer = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.CharField(max_length=100)
 
-# 🔥 SESSION MODEL
-class Session(models.Model):
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    lecturer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    start_time = models.DateTimeField(auto_now_add=True)
-    end_time = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return f"{self.subject.name} - {'Active' if self.is_active else 'Closed'}"
+    start_time = models.DateTimeField(auto_now_add=True)
+    duration_minutes = models.IntegerField(default=60)
 
+    # 🧠 GPS LOCATION YA DARASA
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    radius_meters = models.IntegerField(default=50)
+    # 🧠 WIFI VALIDATION
+    allowed_wifi_ssid = models.CharField(max_length=100, null=True, blank=True)
 
-# 🔥 ATTENDANCE MODEL (THIS WAS MISSING)
 class Attendance(models.Model):
-    session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    time_in = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, default="present")
 
-    class Meta:
-        unique_together = ('session', 'student')
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("PRESENT", "Present"),
+        ("LATE", "Late"),
+        ("ABSENT", "Absent"),
+        ("CHECKED_OUT", "Checked Out"),
+    ]
 
-    def __str__(self):
-        return f"{self.student.reg_number} - {self.session.subject.name}"
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
+
+    check_in_time = models.DateTimeField(null=True, blank=True)
+    check_out_time = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="PENDING"
+    )

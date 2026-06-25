@@ -1,7 +1,13 @@
 from django.urls import path
-from .views import start_session, check_in
+from .views import start_session, check_in, check_out, end_session
+from .views import student_report
+from .views import lecturer_session_report
 
 urlpatterns = [
-    path('start/', start_session),
-    path('checkin/', check_in),
+    path('attendance/start/', start_session),
+    path('attendance/check-in/', check_in),
+    path('attendance/check-out/', check_out),
+    path('attendance/end/', end_session),
+    path('attendance/report/', student_report),
+    path('attendance/session-report/<int:session_id>/', lecturer_session_report),
 ]
